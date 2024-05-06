@@ -9,7 +9,7 @@ Files required:
 Usage example:
 python regridding.py './path/to/imerg/files/*.nc4' '/path/to/geofile/geo_em.d01.nc' './output_dir'
 
-The script allows:
+This script allows you to:
 1) Plot the regridded precipitation (set plot_regridded = True)
 2) Plot IMERG precipitation (only for Argentina) (set plot_imerg = True)
 3) Debug option (set debug = True)
