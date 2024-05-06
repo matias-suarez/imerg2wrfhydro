@@ -1,5 +1,7 @@
 # imerg2wrfhydro
 
+![Alt text](regidding_example.png)
+
 Scripts for regridding IMERG precipitation to the WRF-Hydro domain (regridding.py).
 This script uses inverse distance interpolation. A precipitation value is calculated for each WRF-Hydro grid point using the 4 nearest IMERG grid points.
 Files required:
