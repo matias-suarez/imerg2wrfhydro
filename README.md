@@ -18,7 +18,8 @@ Output files:
 
 
 Usage example:
-python regridding.py './path/to/imerg/files/*.nc4' '/path/to/geofile/geo_em.d01.nc' './output_dir'
+
+**python regridding.py './path/to/imerg/files/*.nc4' '/path/to/geofile/geo_em.d01.nc' './output_dir'**
 
 
 This script allows you to:
