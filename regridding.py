@@ -15,9 +15,12 @@ import cartopy.crs as crs
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 import matplotlib
+
 from mpl_toolkits.basemap import Basemap
 from matplotlib.patches import Polygon
+import pandas as pd
 
+plt.rcParams['pcolor.shading'] ='nearest'
 #############################################################################################################
 #############################################################################################################
 
@@ -36,7 +39,9 @@ plot_regridded = True
 # True para generar una imagen del producto imerg (sirve solo para centro de Argentina!)
 plot_imerg = True      
 # True para mostrar detalle de la ejecucion
-debug = False           
+debug = False 
+# True para calcular la precipitación media en el dominio de regrillado y exportar en un archivo csv
+mean_precipitation = True          
 
 #############################################################################################################
 #############################################################################################################
@@ -222,6 +227,8 @@ def distance(lat0,lon0,lat1,lon1):
 #############################################################################################################
 #############################################################################################################
 
+df_mean_precip = pd.DataFrame()
+
 for i in range(len(imergFilelist)):
 # for i in range(13,27):
 
@@ -338,12 +345,12 @@ for i in range(len(imergFilelist)):
             
     #############################################################################################################
     #############################################################################################################
-    if plot_regridded:    
-        # Se inicia el plot
-        fig = plt.figure(figsize=[8,8], tight_layout=True)
+    if plot_regridded:  
 
+        # Se inicia el plot
+        fig_regridded = plt.figure(figsize=[8,8], tight_layout=True)
         # Utilizar la proyección de WRF
-        ax = plt.axes(projection=cart_proj)
+        ax = plt.axes(projection=cart_proj)  
 
         ax.coastlines('10m', linewidth=1)
         ax.add_feature(shape_dp, linewidth=.5, facecolor='none')
@@ -359,8 +366,8 @@ for i in range(len(imergFilelist)):
         norm = matplotlib.colors.BoundaryNorm(clevs, len(clevs)) # set boundary of data by normalizing (0,1)
 
         plt.pcolor(to_np(lons_geofile), to_np(lats_geofile), temp_array_filtered, vmin=vmin, vmax=vmax,
-                     transform=crs.PlateCarree(),
-                     cmap=precip_colormap)
+                   transform=crs.PlateCarree(),
+                   cmap=precip_colormap)
 
         ax.add_patch(mpl.patches.Rectangle((xlim_d01[0], ylim_d01[0]), xlim_d01[1]-xlim_d01[0],
                                             ylim_d01[1]-ylim_d01[0],
@@ -371,15 +378,26 @@ for i in range(len(imergFilelist)):
         plt.title('Regridded IMERG-F '+imergFilelist[i].split('3IMERG')[-1][1:25]+' Z', fontsize=15)
         plt.tight_layout()
         plt.savefig(output_dir+'/Regridded_Plot_'+imergFilelist[i].split('3IMERG')[-1][1:9]+datetime_object.strftime("%H%M")+'.png')
+
+        fig_regridded.clear()
+        plt.close()
     #############################################################################################################
     #############################################################################################################
+    if mean_precipitation:
+        mean = temp_array_filtered.mean()
+        df_temp = pd.DataFrame({'mean_rainrate':[mean]}, index=[datetime_object])
+        df_mean_precip = pd.concat([df_mean_precip,df_temp])
+    #############################################################################################################
+    #############################################################################################################
+
     if plot_imerg:
+
+        fig_imerg = plt.figure(figsize=(10, 10))
+
         units = imerg_file.variables['precipitationCal'].units
 
         lats_red = [ np.min(lats_geofile).values, np.max(lats_geofile).values, np.max(lats_geofile).values, np.min(lats_geofile).values ]
         lons_red = [ np.min(lons_geofile).values, np.min(lons_geofile).values, np.max(lons_geofile).values, np.max(lons_geofile).values ]
-
-        fig = plt.figure(figsize=(10, 10))
 
         # Get some parameters for the Stereographic Projection
         lon_0 = lons_imerg.mean()
@@ -405,7 +423,8 @@ for i in range(len(imergFilelist)):
         vmax = imerg_precip.max()
         clevs = np.linspace(vmin,vmax,10) #levels / mm
 
-        cs = m.pcolor(xi,yi,np.transpose(np.squeeze(imerg_precip)), cmap=precip_colormap, vmin=vmin, vmax=vmax)
+        cs = m.pcolor(xi, yi, np.transpose(np.squeeze(imerg_precip)),
+                      cmap=precip_colormap, vmin=vmin, vmax=vmax)
 
         # Add Grid Lines
         m.drawstates()
@@ -423,8 +442,12 @@ for i in range(len(imergFilelist)):
         plt.tight_layout()
         plt.savefig(output_dir+'/IMERG_Plot_'+imergFilelist[i].split('3IMERG')[-1][1:9]+datetime_object.strftime("%H%M")+'.png')
 
+        fig_imerg.clear()
+        plt.close()
 
     print('Regrillado del archivo exitoso')
     imerg_file.close()
-    
+
+if mean_precipitation:
+    df_mean_precip.to_csv(output_dir+'/mean_rainrate.csv')
 print('Proceso de regrillado finalizado')
