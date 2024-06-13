@@ -35,9 +35,9 @@ plt.rcParams['pcolor.shading'] ='nearest'
 # Opciones de Ejecucion
 
 # True para generar una imagen del regrillado
-plot_regridded = True
+plot_regridded = False
 # True para generar una imagen del producto imerg (sirve solo para centro de Argentina!)
-plot_imerg = True      
+plot_imerg = False      
 # True para mostrar detalle de la ejecucion
 debug = False 
 # True para calcular la precipitación media en el dominio de regrillado y exportar en un archivo csv
