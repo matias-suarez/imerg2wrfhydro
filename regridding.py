@@ -238,7 +238,15 @@ for i in range(len(imergFilelist)):
     try:
         lons_imerg = imerg_file.variables['lon'][:]
         lats_imerg = imerg_file.variables['lat'][:]
-        imerg_precip = imerg_file.variables['precipitationCal'][:]
+        # Bloque para detectar el nombre del campo de precipitacion
+        if 'precipitationCal' in imerg_file.variables:
+            nombre_campo_precip = 'precipitationCal'
+        elif 'precipitation' in imerg_file.variables:
+            nombre_campo_precip = 'precipitation'
+        else:
+            raise ValueError("No se encontró ninguna variable de precipitación")
+
+        imerg_precip = imerg_file.variables[nombre_campo_precip][:]
     except:
         raise KeyError('No se encontró alguna de las variables (lat,lon,precip) en el archivo IMERG')
 
@@ -394,7 +402,7 @@ for i in range(len(imergFilelist)):
 
         fig_imerg = plt.figure(figsize=(10, 10))
 
-        units = imerg_file.variables['precipitationCal'].units
+        units = imerg_file.variables[nombre_campo_precip].units
 
         lats_red = [ np.min(lats_geofile).values, np.max(lats_geofile).values, np.max(lats_geofile).values, np.min(lats_geofile).values ]
         lons_red = [ np.min(lons_geofile).values, np.min(lons_geofile).values, np.max(lons_geofile).values, np.max(lons_geofile).values ]
